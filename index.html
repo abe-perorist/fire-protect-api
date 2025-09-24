@@ -1,0 +1,1687 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>炎上リスク分析ツール - 企業向けリスク診断システム</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            /* 権威的なカラーパレット - 濃紺・グレー・白基調 */
+            --navy-50: #f8fafc;
+            --navy-100: #f1f5f9;
+            --navy-200: #e2e8f0;
+            --navy-300: #cbd5e1;
+            --navy-400: #94a3b8;
+            --navy-500: #64748b;
+            --navy-600: #475569;
+            --navy-700: #334155;
+            --navy-800: #1e293b;
+            --navy-900: #0f172a;
+            
+            --deep-navy: #1a2332;
+            --dark-navy: #2d3748;
+            --medium-navy: #4a5568;
+            --light-navy: #718096;
+            --pale-navy: #a0aec0;
+            
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            
+            /* 警告色（限定的使用） */
+            --warning-500: #f59e0b;
+            --warning-600: #d97706;
+            --danger-500: #ef4444;
+            --danger-600: #dc2626;
+            --success-500: #10b981;
+            --success-600: #059669;
+            
+            /* アクセントカラー */
+            --accent-blue: #3b82f6;
+            --accent-indigo: #6366f1;
+            
+            /* スペーシング */
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-5: 1.25rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --space-10: 2.5rem;
+            --space-12: 3rem;
+            --space-16: 4rem;
+            --space-20: 5rem;
+            --space-24: 6rem;
+            
+            /* ボーダーラディウス */
+            --radius-sm: 0.125rem;
+            --radius-md: 0.375rem;
+            --radius-lg: 0.5rem;
+            --radius-xl: 0.75rem;
+            --radius-2xl: 1rem;
+            --radius-3xl: 1.5rem;
+            --radius-full: 9999px;
+            
+            /* シャドウ（弱め） */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 2px 4px -1px rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.06);
+            --shadow-lg: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -1px rgb(0 0 0 / 0.06);
+            --shadow-xl: 0 8px 10px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.05);
+            
+            /* テキストカラー */
+            --text-primary: var(--navy-900);
+            --text-secondary: var(--navy-700);
+            --text-muted: var(--navy-500);
+            --text-light: var(--navy-400);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background: linear-gradient(135deg, var(--navy-50) 0%, var(--gray-50) 100%);
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(26, 35, 50, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(45, 55, 72, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        /* コンテナ */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--space-6);
+        }
+        
+        /* ヘッダー */
+        .header {
+            text-align: center;
+            margin-bottom: var(--space-12);
+            padding: var(--space-8) 0;
+        }
+        
+        .header-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto var(--space-6);
+            background: linear-gradient(135deg, var(--deep-navy), var(--dark-navy));
+            border-radius: var(--radius-2xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+        }
+        
+        .header-icon::before {
+            content: '🛡️';
+            font-size: 2rem;
+            filter: grayscale(100%) brightness(0) invert(1);
+        }
+        
+        .header-title {
+            font-family: 'Noto Serif JP', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--deep-navy);
+            margin-bottom: var(--space-2);
+            letter-spacing: -0.02em;
+        }
+        
+        .header-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* カードデザイン */
+        .card {
+            background: white;
+            border: 1px solid var(--navy-200);
+            border-radius: var(--radius-xl);
+            padding: var(--space-8);
+            margin-bottom: var(--space-8);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            box-shadow: var(--shadow-md);
+            border-color: var(--navy-300);
+        }
+        
+        .card-header {
+            margin-bottom: var(--space-6);
+        }
+        
+        .card-title {
+            font-family: 'Noto Serif JP', serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--deep-navy);
+            margin-bottom: var(--space-2);
+        }
+        
+        .card-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+        
+        /* 入力セクション */
+        .input-section {
+            position: relative;
+        }
+        
+        .input-label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-3);
+            font-size: 1rem;
+        }
+        
+        .input-label i {
+            margin-right: var(--space-2);
+            color: var(--accent-blue);
+        }
+        
+        .text-input {
+            width: 100%;
+            min-height: 120px;
+            padding: var(--space-4);
+            border: 2px solid var(--navy-200);
+            border-radius: var(--radius-lg);
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 1rem;
+            line-height: 1.6;
+            resize: vertical;
+            transition: all 0.3s ease;
+            background: var(--navy-50);
+        }
+        
+        .text-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .char-counter {
+            position: absolute;
+            bottom: var(--space-2);
+            right: var(--space-3);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: white;
+            padding: var(--space-1) var(--space-2);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--navy-200);
+        }
+        
+        .char-counter.warning {
+            color: var(--warning-600);
+            border-color: var(--warning-500);
+        }
+        
+        .char-counter.danger {
+            color: var(--danger-600);
+            border-color: var(--danger-500);
+        }
+        
+        /* 分析ボタン */
+        .analyze-btn {
+            width: 100%;
+            padding: var(--space-4) var(--space-6);
+            background: linear-gradient(135deg, var(--deep-navy), var(--dark-navy));
+            color: white;
+            border: none;
+            border-radius: var(--radius-lg);
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .analyze-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .analyze-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        
+        .analyze-btn i {
+            margin-right: var(--space-2);
+        }
+        
+        /* ローディング */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: var(--space-8);
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--navy-200);
+            border-top: 4px solid var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto var(--space-4);
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        /* エラーメッセージ */
+        .error-message {
+            display: none;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: var(--danger-600);
+            padding: var(--space-4);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-6);
+        }
+        
+        /* 結果セクション */
+        .result-section {
+            display: none;
+        }
+        
+        .result-header {
+            text-align: center;
+            margin-bottom: var(--space-8);
+        }
+        
+        .result-title {
+            font-family: 'Noto Serif JP', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--deep-navy);
+            margin-bottom: var(--space-4);
+        }
+        
+        /* リスクスコア表示 */
+        .risk-score-display {
+            text-align: center;
+            margin-bottom: var(--space-8);
+        }
+        
+        .score-circle {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto var(--space-6);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .score-circle svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+        
+        .score-circle-bg {
+            fill: none;
+            stroke: var(--navy-200);
+            stroke-width: 8;
+        }
+        
+        .score-circle-progress {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dasharray 0.5s ease;
+        }
+        
+        .score-circle-progress.low {
+            stroke: var(--success-500);
+        }
+        
+        .score-circle-progress.medium {
+            stroke: var(--warning-500);
+        }
+        
+        .score-circle-progress.high {
+            stroke: var(--danger-500);
+        }
+        
+        .score-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        
+        .score-number {
+            font-family: 'Noto Serif JP', serif;
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--deep-navy);
+            line-height: 1;
+        }
+        
+        .score-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        /* リスクレベルバッジ */
+        .risk-level-badge {
+            display: inline-block;
+            padding: var(--space-3) var(--space-6);
+            border-radius: var(--radius-full);
+            font-size: 1.125rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-4);
+        }
+        
+        .risk-level-badge.safe {
+            background: var(--success-500);
+            color: white;
+        }
+        
+        .risk-level-badge.review {
+            background: var(--warning-500);
+            color: white;
+        }
+        
+        .risk-level-badge.danger {
+            background: var(--danger-500);
+            color: white;
+        }
+        
+        .risk-level-badge.critical {
+            background: var(--danger-600);
+            color: white;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        /* 詳細スコア表示 */
+        .detailed-scores {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-4);
+            margin-bottom: var(--space-8);
+        }
+        
+        .score-item {
+            background: var(--navy-50);
+            border: 1px solid var(--navy-200);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            text-align: center;
+        }
+        
+        .score-item-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-2);
+            font-weight: 500;
+        }
+        
+        .score-item-value {
+            font-family: 'Noto Serif JP', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--deep-navy);
+        }
+        
+        .score-item-bar {
+            width: 100%;
+            height: 4px;
+            background: var(--navy-200);
+            border-radius: var(--radius-full);
+            margin-top: var(--space-2);
+            overflow: hidden;
+        }
+        
+        .score-item-progress {
+            height: 100%;
+            border-radius: var(--radius-full);
+            transition: width 0.5s ease;
+        }
+        
+        .score-item-progress.low {
+            background: var(--success-500);
+        }
+        
+        .score-item-progress.medium {
+            background: var(--warning-500);
+        }
+        
+        .score-item-progress.high {
+            background: var(--danger-500);
+        }
+        
+        /* 推奨事項 */
+        .recommendations {
+            margin-bottom: var(--space-8);
+        }
+        
+        .recommendations-title {
+            font-family: 'Noto Serif JP', serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--deep-navy);
+            margin-bottom: var(--space-4);
+        }
+        
+        .recommendation-item {
+            background: var(--navy-50);
+            border-left: 4px solid var(--accent-blue);
+            padding: var(--space-4);
+            margin-bottom: var(--space-3);
+            border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+        }
+        
+        .recommendation-item i {
+            color: var(--accent-blue);
+            margin-right: var(--space-2);
+        }
+        
+        /* 分析テキスト */
+        .analysis-text {
+            background: var(--navy-50);
+            border: 1px solid var(--navy-200);
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            margin-bottom: var(--space-8);
+            line-height: 1.8;
+        }
+        
+        .analysis-text h3 {
+            font-family: 'Noto Serif JP', serif;
+            color: var(--deep-navy);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: var(--space-4) 0 var(--space-2) 0;
+            padding-bottom: var(--space-2);
+            border-bottom: 2px solid var(--navy-200);
+        }
+        
+        .analysis-text h4 {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin: var(--space-3) 0 var(--space-2) 0;
+        }
+        
+        .analysis-text p {
+            margin: var(--space-2) 0;
+        }
+        
+        .analysis-text ul {
+            margin: var(--space-2) 0;
+            padding-left: var(--space-6);
+        }
+        
+        .analysis-text li {
+            margin: var(--space-1) 0;
+        }
+        
+        .analysis-text strong {
+            color: var(--deep-navy);
+            font-weight: 600;
+        }
+        
+        /* 詳細分析レポートのスタイリング */
+        .detailed-analysis-section {
+            margin-top: var(--space-8);
+            padding: var(--space-6);
+            background: linear-gradient(135deg, var(--navy-50), var(--gray-50));
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--navy-200);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        .detailed-analysis-section h3 {
+            font-family: 'Noto Serif JP', serif;
+            color: var(--deep-navy);
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: var(--space-8);
+            text-align: center;
+            position: relative;
+            padding: var(--space-4) 0;
+        }
+        
+        .detailed-analysis-section h3::before {
+            content: '📊';
+            display: block;
+            font-size: 2rem;
+            margin-bottom: var(--space-3);
+            opacity: 0.8;
+        }
+        
+        .detailed-analysis-section h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-indigo));
+            border-radius: var(--radius-full);
+        }
+        
+        .analysis-section {
+            background: white;
+            border: 1px solid var(--navy-200);
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            margin-bottom: var(--space-5);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .analysis-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--accent-blue), var(--accent-indigo));
+            transition: width 0.3s ease;
+        }
+        
+        .analysis-section:hover {
+            border-color: var(--accent-blue);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .analysis-section:hover::before {
+            width: 6px;
+        }
+        
+        .analysis-section h4 {
+            font-family: 'Noto Serif JP', serif;
+            color: var(--deep-navy);
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: var(--space-4);
+            padding-bottom: var(--space-3);
+            border-bottom: 2px solid var(--navy-100);
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+        
+        .analysis-section h4::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--accent-blue);
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .analysis-section p {
+            color: var(--text-primary);
+            line-height: 1.8;
+            margin-bottom: var(--space-3);
+            font-size: 1rem;
+        }
+        
+        .analysis-section ul {
+            margin: var(--space-4) 0;
+            padding-left: 0;
+            list-style: none;
+        }
+        
+        .analysis-section li {
+            color: var(--text-primary);
+            margin: var(--space-3) 0;
+            line-height: 1.7;
+            position: relative;
+            padding-left: var(--space-6);
+            font-size: 1rem;
+        }
+        
+        .analysis-section li::before {
+            content: '▶';
+            position: absolute;
+            left: 0;
+            color: var(--accent-blue);
+            font-size: 0.8rem;
+            top: 0.1em;
+        }
+        
+        .analysis-section ol {
+            margin: var(--space-4) 0;
+            padding-left: 0;
+            counter-reset: item;
+        }
+        
+        .analysis-section ol li {
+            color: var(--text-primary);
+            margin: var(--space-3) 0;
+            line-height: 1.7;
+            position: relative;
+            padding-left: var(--space-8);
+            counter-increment: item;
+            font-size: 1rem;
+        }
+        
+        .analysis-section ol li::before {
+            content: counter(item);
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: var(--accent-blue);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .analysis-section.conclusion {
+            background: white;
+            border: 2px solid var(--accent-blue);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .analysis-section.conclusion::before {
+            background: var(--accent-blue);
+            width: 6px;
+        }
+        
+        .analysis-section.conclusion::after {
+            content: '🎯';
+            position: absolute;
+            top: var(--space-4);
+            right: var(--space-4);
+            font-size: 1.5rem;
+            opacity: 0.3;
+        }
+        
+        .analysis-section.conclusion h4 {
+            color: var(--accent-blue);
+            border-bottom-color: var(--accent-blue);
+        }
+        
+        .analysis-section.conclusion h4::before {
+            background: var(--accent-blue);
+            width: 10px;
+            height: 10px;
+        }
+        
+        .analysis-section.conclusion p {
+            color: var(--text-primary);
+            font-size: 1.05rem;
+            line-height: 1.8;
+            font-weight: 500;
+        }
+        
+        .analysis-section.conclusion:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.2);
+            border-color: var(--accent-indigo);
+        }
+        
+        /* 関連事例 */
+        .related-cases {
+            margin-bottom: var(--space-8);
+        }
+        
+        .related-cases-title {
+            font-family: 'Noto Serif JP', serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--deep-navy);
+            margin-bottom: var(--space-4);
+        }
+        
+        .case-item {
+            background: white;
+            border: 1px solid var(--navy-200);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            margin-bottom: var(--space-3);
+            transition: all 0.3s ease;
+        }
+        
+        .case-item:hover {
+            border-color: var(--navy-300);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .case-title {
+            font-weight: 600;
+            color: var(--deep-navy);
+            margin-bottom: var(--space-2);
+        }
+        
+        .case-meta {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-2);
+        }
+        
+        .case-description {
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+        
+        /* フッター */
+        .footer {
+            text-align: center;
+            padding: var(--space-8) 0;
+            border-top: 1px solid var(--navy-200);
+            margin-top: var(--space-12);
+            color: var(--text-secondary);
+        }
+        
+        .footer-brand {
+            font-family: 'Noto Serif JP', serif;
+            font-weight: 600;
+            color: var(--deep-navy);
+            margin-bottom: var(--space-2);
+        }
+        
+        .footer-version {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+        
+        /* レスポンシブデザイン */
+        @media (max-width: 768px) {
+            .container {
+                padding: var(--space-4);
+            }
+            
+            .header-title {
+                font-size: 2rem;
+            }
+            
+            .card {
+                padding: var(--space-6);
+            }
+            
+            .score-circle {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .score-number {
+                font-size: 2rem;
+            }
+            
+            .detailed-scores {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* アニメーション */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* スクロールバーのカスタマイズ */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--navy-100);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--navy-400);
+            border-radius: var(--radius-full);
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--navy-500);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ヘッダー -->
+        <header class="header">
+            <div class="header-icon"></div>
+            <h1 class="header-title">炎上リスク分析ツール</h1>
+            <p class="header-subtitle">企業向けリスク診断システム - 投稿前のリスクを科学的に分析し、適切な対応策を提案します</p>
+        </header>
+
+        <!-- 入力セクション -->
+        <div class="card input-section">
+            <div class="card-header">
+                <h2 class="card-title">分析対象テキスト</h2>
+                <p class="card-subtitle">投稿予定のテキストを入力してください（最大1000文字）</p>
+            </div>
+            
+            <label for="textInput" class="input-label">
+                <i class="fas fa-edit"></i>
+                テキスト入力
+            </label>
+            <textarea 
+                id="textInput" 
+                class="text-input" 
+                placeholder="分析したいテキストを入力してください..."
+                maxlength="1000"
+            ></textarea>
+            <div class="char-counter" id="charCounter">0 / 1000</div>
+            
+            <button id="analyzeBtn" class="analyze-btn">
+                <i class="fas fa-shield-alt"></i>
+                リスク分析を実行
+            </button>
+        </div>
+
+        <!-- ローディング -->
+        <div class="loading" id="loading">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">AI分析を実行中です...</p>
+        </div>
+
+        <!-- エラーメッセージ -->
+        <div class="error-message" id="errorMessage"></div>
+
+        <!-- 結果セクション -->
+        <div class="result-section" id="resultSection">
+            <div class="result-header">
+                <h2 class="result-title">分析結果</h2>
+            </div>
+
+            <!-- リスクスコア表示 -->
+            <div class="card risk-score-display">
+                <div class="score-circle" id="scoreCircle">
+                    <svg viewBox="0 0 100 100">
+                        <circle class="score-circle-bg" cx="50" cy="50" r="40"></circle>
+                        <circle class="score-circle-progress" cx="50" cy="50" r="40" id="scoreProgress"></circle>
+                    </svg>
+                    <div class="score-text">
+                        <div class="score-number" id="scoreNumber">0</div>
+                        <div class="score-label">リスクスコア</div>
+                    </div>
+                </div>
+                
+                <div class="risk-level-badge" id="riskLevelBadge">分析中</div>
+                <p id="riskDescription">分析結果に基づくリスク評価</p>
+            </div>
+
+            <!-- 詳細スコア -->
+            <div class="card">
+                <h3 class="card-title">詳細分析結果</h3>
+                <div class="detailed-scores" id="detailedScores">
+                    <!-- JavaScript で動的生成 -->
+                </div>
+            </div>
+
+            <!-- 推奨事項 -->
+            <div class="card recommendations">
+                <h3 class="recommendations-title">推奨事項</h3>
+                <div id="recommendationsList">
+                    <!-- JavaScript で動的生成 -->
+                </div>
+            </div>
+
+            <!-- 分析テキスト -->
+            <div class="card">
+                <h3 class="card-title">詳細分析レポート</h3>
+                <div class="analysis-text" id="analysisText">
+                    <!-- JavaScript で動的生成 -->
+                </div>
+            </div>
+
+            <!-- 関連事例 -->
+            <div class="card related-cases">
+                <h3 class="related-cases-title" id="relatedCasesTitle">関連する炎上事例</h3>
+                <div id="relatedCasesList">
+                    <!-- JavaScript で動的生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- フッター -->
+    <footer class="footer">
+        <div class="footer-brand">リスク分析ラボ</div>
+        <div class="footer-version">Version 2.0.0 - 企業向けリスク診断システム</div>
+    </footer>
+
+    <script>
+        // DOM要素の取得
+        const textInput = document.getElementById('textInput');
+        const charCounter = document.getElementById('charCounter');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const loading = document.getElementById('loading');
+        const errorMessage = document.getElementById('errorMessage');
+        const resultSection = document.getElementById('resultSection');
+        const scoreCircle = document.getElementById('scoreCircle');
+        const scoreProgress = document.getElementById('scoreProgress');
+        const scoreNumber = document.getElementById('scoreNumber');
+        const riskLevelBadge = document.getElementById('riskLevelBadge');
+        const riskDescription = document.getElementById('riskDescription');
+        const detailedScores = document.getElementById('detailedScores');
+        const recommendationsList = document.getElementById('recommendationsList');
+        const analysisText = document.getElementById('analysisText');
+        const relatedCasesList = document.getElementById('relatedCasesList');
+        const relatedCasesTitle = document.getElementById('relatedCasesTitle');
+
+        // 文字数カウンター
+        textInput.addEventListener('input', function() {
+            const length = this.value.length;
+            charCounter.textContent = `${length} / 1000`;
+            
+            if (length > 800) {
+                charCounter.className = 'char-counter danger';
+            } else if (length > 600) {
+                charCounter.className = 'char-counter warning';
+            } else {
+                charCounter.className = 'char-counter';
+            }
+        });
+
+        // ローディング状態の管理
+        function setLoading(isLoading) {
+            if (isLoading) {
+                loading.style.display = 'block';
+                analyzeBtn.disabled = true;
+                analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 分析中...';
+            } else {
+                loading.style.display = 'none';
+                analyzeBtn.disabled = false;
+                analyzeBtn.innerHTML = '<i class="fas fa-shield-alt"></i> リスク分析を実行';
+            }
+        }
+
+        // エラーメッセージの表示
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+
+        function hideError() {
+            errorMessage.style.display = 'none';
+        }
+
+        // 結果の非表示
+        function hideResult() {
+            resultSection.style.display = 'none';
+        }
+
+        // 円形プログレスバーの更新
+        function updateScoreCircle(score) {
+            const circumference = 2 * Math.PI * 40;
+            const progress = (score / 100) * circumference;
+            
+            scoreProgress.style.strokeDasharray = `${progress} ${circumference}`;
+            scoreNumber.textContent = score;
+            
+            // スコアに応じて色を変更
+            scoreProgress.className = 'score-circle-progress';
+            if (score >= 70) {
+                scoreProgress.classList.add('high');
+            } else if (score >= 40) {
+                scoreProgress.classList.add('medium');
+            } else {
+                scoreProgress.classList.add('low');
+            }
+        }
+
+        // 詳細スコアの表示
+        function displayDetailedScores(riskScore) {
+            const scores = [
+                { label: 'コンテンツリスク', value: riskScore.content_risk, color: getScoreColor(riskScore.content_risk) },
+                { label: '法的リスク', value: riskScore.legal_risk, color: getScoreColor(riskScore.legal_risk) },
+                { label: 'ブランドリスク', value: riskScore.brand_risk, color: getScoreColor(riskScore.brand_risk) },
+                { label: '社会的リスク', value: riskScore.social_risk, color: getScoreColor(riskScore.social_risk) }
+            ];
+
+            detailedScores.innerHTML = scores.map(score => `
+                <div class="score-item">
+                    <div class="score-item-label">${score.label}</div>
+                    <div class="score-item-value">${score.value}</div>
+                    <div class="score-item-bar">
+                        <div class="score-item-progress ${score.color}" style="width: ${score.value}%"></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // スコアに応じた色の取得
+        function getScoreColor(score) {
+            if (score >= 70) return 'high';
+            if (score >= 40) return 'medium';
+            return 'low';
+        }
+
+        // リスクレベルの表示
+        function displayRiskLevel(riskLevel, recommendation) {
+            riskLevelBadge.textContent = riskLevel;
+            riskLevelBadge.className = 'risk-level-badge';
+            
+            if (riskLevel === '投稿可') {
+                riskLevelBadge.classList.add('safe');
+                riskDescription.textContent = '安全に投稿できます';
+            } else if (riskLevel === '要レビュー') {
+                riskLevelBadge.classList.add('review');
+                riskDescription.textContent = '投稿前の見直しが必要です';
+            } else if (riskLevel === '投稿危険') {
+                riskLevelBadge.classList.add('danger');
+                riskDescription.textContent = '投稿は危険です';
+            } else if (riskLevel === '即時停止') {
+                riskLevelBadge.classList.add('critical');
+                riskDescription.textContent = '直ちに投稿を中止してください';
+            }
+        }
+
+        // 推奨事項の表示
+        function displayRecommendations(recommendations) {
+            recommendationsList.innerHTML = recommendations.map(rec => `
+                <div class="recommendation-item">
+                    <i class="fas fa-check-circle"></i>
+                    ${rec}
+                </div>
+            `).join('');
+        }
+
+        // 分析テキストの表示
+        function displayAnalysisText(text, riskScore, relatedCases) {
+            // 既存の分析テキストを表示
+            let html = convertMarkdownToHtml(text);
+            
+            // より詳細な分析レポートを追加
+            html += generateDetailedAnalysisReport(text, riskScore, relatedCases);
+            
+            analysisText.innerHTML = html;
+        }
+
+        // 詳細分析レポートの生成
+        function generateDetailedAnalysisReport(originalText, riskScore, relatedCases) {
+            // リスクスコアに基づく詳細分析
+            const overallRisk = getDetailedRiskAssessment(riskScore);
+            const contentRisk = getContentRiskAnalysis(originalText, riskScore);
+            const legalRisk = getLegalRiskAnalysis(originalText, riskScore);
+            const brandRisk = getBrandRiskAnalysis(originalText, riskScore);
+            const socialRisk = getSocialRiskAnalysis(originalText, riskScore);
+            const riskFactors = analyzeRiskFactors(originalText, riskScore);
+            const comparison = getCaseComparison(relatedCases);
+            
+            return `
+                <div class="detailed-analysis-section">
+                    <h3>詳細リスク分析レポート</h3>
+                    
+                    <div class="analysis-section">
+                        <h4>総合リスク評価</h4>
+                        <p>${overallRisk}</p>
+                    </div>
+                    
+                    <div class="analysis-section">
+                        <h4>原因カテゴリ</h4>
+                        <p><strong>${riskScore.category}</strong> - ${getCategoryExplanation(riskScore.category)}</p>
+                    </div>
+                    
+                    <div class="analysis-section">
+                        <h4>リスク要因</h4>
+                        <ul>
+                            ${riskFactors.map(factor => `<li>${factor}</li>`).join('')}
+                        </ul>
+                    </div>
+                    
+                    <div class="analysis-section">
+                        <h4>コンテンツリスク分析</h4>
+                        <p>${contentRisk}</p>
+                    </div>
+                    
+                    <div class="analysis-section">
+                        <h4>法的リスク分析</h4>
+                        <p>${legalRisk}</p>
+                    </div>
+                    
+                    <div class="analysis-section">
+                        <h4>ブランドリスク分析</h4>
+                        <p>${brandRisk}</p>
+                    </div>
+                    
+                    <div class="analysis-section">
+                        <h4>社会的リスク分析</h4>
+                        <p>${socialRisk}</p>
+                    </div>
+                    
+                    <div class="analysis-section">
+                        <h4>類似事例との比較</h4>
+                        <p>${comparison}</p>
+                    </div>
+                    
+                    <div class="analysis-section">
+                        <h4>修正案</h4>
+                        <p>${getRevisionSuggestion(originalText, riskScore)}</p>
+                    </div>
+                    
+                    <div class="analysis-section">
+                        <h4>改善提案</h4>
+                        <ol>
+                            <li><strong>投稿の削除:</strong> 直ちに投稿を削除し、再発防止策を講じます。</li>
+                            <li><strong>謝罪文の発表:</strong> 関係者への謝罪と、不適切な表現を深く反省している旨を明確に記した謝罪文を公開します。</li>
+                            <li><strong>再発防止策の策定:</strong> 社内規定の見直し、社員教育の強化など、不適切な表現を含む投稿を防ぐための具体的な対策を講じます。</li>
+                            <li><strong>モニタリング体制の強化:</strong> SNS等での発言を監視し、問題のある投稿を早期に発見・対応できる体制を整えます。</li>
+                            <li><strong>専門家への相談:</strong> 必要に応じて、弁護士やPR専門家などに相談し、適切な対応を行います。</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="analysis-section conclusion">
+                        <h4>結論</h4>
+                        <p>${getConclusion(riskScore)}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // テキストからキーワードを抽出
+        function extractKeywordsFromText(text) {
+            const keywords = [];
+            const highRiskWords = ['差別', '攻撃', '暴力的', '不適切', '誹謗', '中傷', '侮辱'];
+            const mediumRiskWords = ['問題', '懸念', 'リスク', '危険', '注意'];
+            
+            highRiskWords.forEach(word => {
+                if (text.includes(word)) {
+                    keywords.push({ word, level: 'high' });
+                }
+            });
+            
+            mediumRiskWords.forEach(word => {
+                if (text.includes(word)) {
+                    keywords.push({ word, level: 'medium' });
+                }
+            });
+            
+            return keywords;
+        }
+
+        // 総合リスク評価の詳細分析
+        function getDetailedRiskAssessment(riskScore) {
+            const overall = riskScore.overall_score;
+            const confidence = riskScore.confidence;
+            
+            if (overall >= 80) {
+                return `総合スコア${overall}/100は極めて高いリスクを示しています。分析信頼度${confidence}%に基づき、即座の対応が必要です。投稿は炎上拡散の可能性が非常に高く、企業の信頼性に深刻な影響を与える危険性があります。`;
+            } else if (overall >= 60) {
+                return `総合スコア${overall}/100は高いリスクを示しています。分析信頼度${confidence}%に基づき、慎重な検討と適切な対応が求められます。投稿前に内容の見直しを強く推奨します。`;
+            } else if (overall >= 40) {
+                return `総合スコア${overall}/100は中程度のリスクを示しています。分析信頼度${confidence}%に基づき、一部の表現に注意が必要です。投稿前に軽微な修正を検討することをお勧めします。`;
+            } else {
+                return `総合スコア${overall}/100は低いリスクを示しています。分析信頼度${confidence}%に基づき、現状では大きな問題はありませんが、継続的なモニタリングが重要です。`;
+            }
+        }
+
+        // コンテンツリスク分析
+        function getContentRiskAnalysis(text, riskScore) {
+            const contentRisk = riskScore.content_risk;
+            const issues = [];
+            
+            if (text.includes('差別') || text.includes('偏見')) {
+                issues.push('差別的表現が含まれています');
+            }
+            if (text.includes('攻撃') || text.includes('暴力的')) {
+                issues.push('攻撃的または暴力的な表現が含まれています');
+            }
+            if (text.includes('不適切') || text.includes('問題')) {
+                issues.push('不適切な表現が含まれています');
+            }
+            if (text.includes('誹謗') || text.includes('中傷')) {
+                issues.push('誹謗中傷の可能性があります');
+            }
+            
+            if (contentRisk >= 80) {
+                return `コンテンツリスクスコア${contentRisk}/100は極めて高い危険性を示しています。${issues.length > 0 ? issues.join('、') + '。' : ''}投稿内容は社会的に問題となる可能性が非常に高く、即座の修正が必要です。`;
+            } else if (contentRisk >= 60) {
+                return `コンテンツリスクスコア${contentRisk}/100は高い危険性を示しています。${issues.length > 0 ? issues.join('、') + '。' : ''}表現の見直しを強く推奨します。`;
+            } else if (contentRisk >= 40) {
+                return `コンテンツリスクスコア${contentRisk}/100は中程度の危険性を示しています。${issues.length > 0 ? issues.join('、') + '。' : ''}一部の表現に注意が必要です。`;
+            } else {
+                return `コンテンツリスクスコア${contentRisk}/100は低い危険性を示しています。現状では大きな問題はありませんが、表現の適切性を継続的に確認することが重要です。`;
+            }
+        }
+
+        // 法的リスク分析
+        function getLegalRiskAnalysis(text, riskScore) {
+            const legalRisk = riskScore.legal_risk;
+            const legalIssues = [];
+            
+            if (text.includes('名誉') || text.includes('侮辱')) {
+                legalIssues.push('名誉毀損や侮辱罪の可能性');
+            }
+            if (text.includes('差別') || text.includes('偏見')) {
+                legalIssues.push('差別禁止法違反の可能性');
+            }
+            if (text.includes('個人情報') || text.includes('プライバシー')) {
+                legalIssues.push('個人情報保護法違反の可能性');
+            }
+            
+            if (legalRisk >= 80) {
+                return `法的リスクスコア${legalRisk}/100は極めて高い法的責任の可能性を示しています。${legalIssues.length > 0 ? legalIssues.join('、') + 'が懸念されます。' : ''}法務部門との緊急相談を強く推奨します。`;
+            } else if (legalRisk >= 60) {
+                return `法的リスクスコア${legalRisk}/100は高い法的責任の可能性を示しています。${legalIssues.length > 0 ? legalIssues.join('、') + 'が懸念されます。' : ''}投稿前の法務確認を推奨します。`;
+            } else if (legalRisk >= 40) {
+                return `法的リスクスコア${legalRisk}/100は中程度の法的責任の可能性を示しています。${legalIssues.length > 0 ? legalIssues.join('、') + 'に注意が必要です。' : ''}継続的な法務監視が重要です。`;
+            } else {
+                return `法的リスクスコア${legalRisk}/100は低い法的責任の可能性を示しています。現状では大きな法的問題はありませんが、法的コンプライアンスの継続的な確認が重要です。`;
+            }
+        }
+
+        // ブランドリスク分析
+        function getBrandRiskAnalysis(text, riskScore) {
+            const brandRisk = riskScore.brand_risk;
+            const brandIssues = [];
+            
+            if (text.includes('企業') || text.includes('会社')) {
+                brandIssues.push('企業イメージへの直接的な影響');
+            }
+            if (text.includes('顧客') || text.includes('お客様')) {
+                brandIssues.push('顧客関係への影響');
+            }
+            if (text.includes('ブランド') || text.includes('信頼')) {
+                brandIssues.push('ブランド信頼性への影響');
+            }
+            
+            if (brandRisk >= 80) {
+                return `ブランドリスクスコア${brandRisk}/100は極めて高いブランド毀損の可能性を示しています。${brandIssues.length > 0 ? brandIssues.join('、') + 'が懸念されます。' : ''}企業の信頼性に深刻な打撃を与える危険性があります。`;
+            } else if (brandRisk >= 60) {
+                return `ブランドリスクスコア${brandRisk}/100は高いブランド毀損の可能性を示しています。${brandIssues.length > 0 ? brandIssues.join('、') + 'が懸念されます。' : ''}広報戦略の見直しが必要です。`;
+            } else if (brandRisk >= 40) {
+                return `ブランドリスクスコア${brandRisk}/100は中程度のブランド毀損の可能性を示しています。${brandIssues.length > 0 ? brandIssues.join('、') + 'に注意が必要です。' : ''}ブランド監視の強化を推奨します。`;
+            } else {
+                return `ブランドリスクスコア${brandRisk}/100は低いブランド毀損の可能性を示しています。現状では大きなブランド影響はありませんが、継続的なブランド監視が重要です。`;
+            }
+        }
+
+        // 社会的リスク分析
+        function getSocialRiskAnalysis(text, riskScore) {
+            const socialRisk = riskScore.social_risk;
+            const socialIssues = [];
+            
+            if (text.includes('社会') || text.includes('世論')) {
+                socialIssues.push('社会問題化の可能性');
+            }
+            if (text.includes('炎上') || text.includes('拡散')) {
+                socialIssues.push('炎上拡散の可能性');
+            }
+            if (text.includes('SNS') || text.includes('ソーシャル')) {
+                socialIssues.push('SNSでの拡散リスク');
+            }
+            
+            if (socialRisk >= 80) {
+                return `社会的リスクスコア${socialRisk}/100は極めて高い社会問題化の可能性を示しています。${socialIssues.length > 0 ? socialIssues.join('、') + 'が懸念されます。' : ''}SNS等での急速な拡散により、大きな社会問題に発展する危険性があります。`;
+            } else if (socialRisk >= 60) {
+                return `社会的リスクスコア${socialRisk}/100は高い社会問題化の可能性を示しています。${socialIssues.length > 0 ? socialIssues.join('、') + 'が懸念されます。' : ''}SNS監視体制の強化が必要です。`;
+            } else if (socialRisk >= 40) {
+                return `社会的リスクスコア${socialRisk}/100は中程度の社会問題化の可能性を示しています。${socialIssues.length > 0 ? socialIssues.join('、') + 'に注意が必要です。' : ''}継続的な社会動向の監視が重要です。`;
+            } else {
+                return `社会的リスクスコア${socialRisk}/100は低い社会問題化の可能性を示しています。現状では大きな社会的影響はありませんが、継続的な社会動向の監視が重要です。`;
+            }
+        }
+
+        // リスク要因の分析
+        function analyzeRiskFactors(text, riskScore) {
+            const factors = [];
+            
+            if (text.includes('差別') || text.includes('偏見')) {
+                factors.push('差別的表現の使用');
+            }
+            if (text.includes('攻撃') || text.includes('暴力的')) {
+                factors.push('攻撃的または暴力的な表現');
+            }
+            if (text.includes('不適切') || text.includes('問題')) {
+                factors.push('不適切な表現の使用');
+            }
+            if (text.includes('誹謗') || text.includes('中傷')) {
+                factors.push('誹謗中傷の可能性');
+            }
+            if (text.includes('侮辱') || text.includes('軽視')) {
+                factors.push('侮辱的な表現');
+            }
+            if (text.includes('企業') || text.includes('会社')) {
+                factors.push('企業ブランドへの影響');
+            }
+            if (text.includes('社会') || text.includes('世論')) {
+                factors.push('社会的影響の可能性');
+            }
+            
+            // スコアに基づく追加要因
+            if (riskScore.overall_score >= 80) {
+                factors.push('極めて高い炎上リスク');
+                factors.push('即座の対応が必要');
+            } else if (riskScore.overall_score >= 60) {
+                factors.push('高い炎上リスク');
+                factors.push('慎重な検討が必要');
+            }
+            
+            // デフォルトの要因
+            if (factors.length === 0) {
+                factors.push('表現の適切性の検証が必要');
+                factors.push('潜在的リスクの評価が必要');
+            }
+            
+            return factors;
+        }
+
+        // カテゴリの説明
+        function getCategoryExplanation(category) {
+            const explanations = {
+                '差別的表現': '特定の属性やグループに対する差別的な表現が含まれています。社会的に問題となる可能性が高く、法的責任も問われる可能性があります。',
+                '誹謗中傷': '個人や団体に対する誹謗中傷の可能性があります。名誉毀損罪や侮辱罪に問われる可能性があります。',
+                '個人情報漏洩': '個人情報の漏洩やプライバシーの侵害の可能性があります。個人情報保護法違反の可能性があります。',
+                '労働問題': '労働環境や雇用に関する問題が含まれています。労働基準法違反の可能性があります。',
+                '社会的責任の欠如': '企業の社会的責任に対する認識が不足している可能性があります。CSR（企業の社会的責任）の観点から問題となる可能性があります。',
+                '情報隠蔽': '重要な情報の隠蔽や不透明な対応が含まれています。企業の透明性に対する疑問を招く可能性があります。',
+                '不適切な表現': '社会的に不適切とされる表現が含まれています。企業の信頼性に影響を与える可能性があります。',
+                '不謹慎な表現': '不謹慎で配慮に欠ける表現が含まれています。社会的な批判を招く可能性があります。',
+                '社会問題への偏見': '社会問題に対する偏見や偏った見解が含まれています。社会の多様性に対する理解不足を示す可能性があります。',
+                '趣味嗜好への差別': '特定の趣味や嗜好に対する差別的な表現が含まれています。個人の自由な選択に対する尊重が不足している可能性があります。'
+            };
+            return explanations[category] || '投稿内容に問題となる要素が含まれている可能性があります。';
+        }
+
+        // 類似事例との比較
+        function getCaseComparison(relatedCases) {
+            if (relatedCases.length === 0) {
+                return '類似する炎上事例は見つかりませんでした。ただし、投稿内容の特徴から、過去の炎上事例と同様のリスクパターンが存在する可能性があります。';
+            }
+            
+            const caseCount = relatedCases.length;
+            const categories = [...new Set(relatedCases.map(case_ => case_.cause_category))];
+            const avgImpact = relatedCases.reduce((sum, case_) => sum + (case_.social_impact_score || 50), 0) / caseCount;
+            
+            return `過去の${caseCount}件の類似炎上事例を分析した結果、${categories.join('、')}などの原因カテゴリが確認されました。平均的な社会的影響度は${Math.round(avgImpact)}/100で、${avgImpact >= 70 ? '高い' : avgImpact >= 50 ? '中程度の' : '低い'}影響が予想されます。これらの事例の結果を参考に、適切な対応策を講じることが重要です。`;
+        }
+
+
+        // 修正案の提案
+        function getRevisionSuggestion(text, riskScore) {
+            const overallRisk = riskScore.overall_score;
+            
+            if (overallRisk >= 80) {
+                return `総合スコア${overallRisk}/100は極めて高いリスクを示しているため、投稿内容の全面的な見直しが必要です。差別的、攻撃的、または不適切な表現を完全に除去し、より建設的で適切な表現に変更することを強く推奨します。具体的な修正案については、法務部門やPR専門家との相談を推奨します。`;
+            } else if (overallRisk >= 60) {
+                return `総合スコア${overallRisk}/100は高いリスクを示しているため、投稿内容の一部修正が必要です。問題となる表現を特定し、より適切で建設的な表現に変更することを推奨します。修正後は再度リスク分析を行うことをお勧めします。`;
+            } else if (overallRisk >= 40) {
+                return `総合スコア${overallRisk}/100は中程度のリスクを示しているため、軽微な修正を検討することをお勧めします。一部の表現をより適切なものに変更することで、リスクをさらに低減できる可能性があります。`;
+            } else {
+                return `総合スコア${overallRisk}/100は低いリスクを示しているため、現状では大きな修正は不要です。ただし、より安全な表現に変更することで、リスクをさらに低減できる可能性があります。`;
+            }
+        }
+
+        // 結論
+        function getConclusion(riskScore) {
+            const overallRisk = riskScore.overall_score;
+            const confidence = riskScore.confidence;
+            
+            if (overallRisk >= 80) {
+                return `この投稿は、総合スコア${overallRisk}/100という極めて高いリスクを孕んでいます。分析信頼度${confidence}%に基づき、即座の対応が必要です。迅速かつ適切な対応を行うことが、企業の存続に関わる重大な問題です。投稿の削除、謝罪文の発表、再発防止策の策定など、包括的な対応が求められます。`;
+            } else if (overallRisk >= 60) {
+                return `この投稿は、総合スコア${overallRisk}/100という高いリスクを孕んでいます。分析信頼度${confidence}%に基づき、慎重な検討と適切な対応が求められます。投稿前の内容見直し、法務確認、広報戦略の検討など、リスクを最小化するための対策が重要です。`;
+            } else if (overallRisk >= 40) {
+                return `この投稿は、総合スコア${overallRisk}/100という中程度のリスクを孕んでいます。分析信頼度${confidence}%に基づき、一部の表現に注意が必要です。軽微な修正により、リスクをさらに低減できる可能性があります。継続的なモニタリングと適切な対応が重要です。`;
+            } else {
+                return `この投稿は、総合スコア${overallRisk}/100という低いリスクを示しています。分析信頼度${confidence}%に基づき、現状では大きな問題はありませんが、継続的なモニタリングと適切な対応が重要です。企業の信頼性維持とリスク管理において、予防的なアプローチを継続することが推奨されます。`;
+            }
+        }
+
+        // 関連事例の表示
+        function displayRelatedCases(cases, riskLevel) {
+            if (cases.length === 0) {
+                if (riskLevel === '投稿可') {
+                    relatedCasesTitle.textContent = '安全な投稿のベストプラクティス';
+                    relatedCasesList.innerHTML = `
+                        <div class="case-item">
+                            <div class="case-title">適切な表現の使用</div>
+                            <div class="case-description">現在の内容は適切な表現が使用されており、安全に投稿できます。今後もこのような配慮のある表現を心がけてください。</div>
+                        </div>
+                        <div class="case-item">
+                            <div class="case-title">継続的なリスク管理</div>
+                            <div class="case-description">定期的なリスク分析により、投稿前のチェック体制を維持し、安全なコミュニケーションを継続しましょう。</div>
+                        </div>
+                    `;
+                } else {
+                    relatedCasesList.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: var(--space-8);">関連する類似事例が見つかりませんでした。</p>';
+                }
+                return;
+            }
+
+            relatedCasesList.innerHTML = cases.map(case_ => `
+                <div class="case-item">
+                    <div class="case-title">${case_.title}</div>
+                    <div class="case-meta">
+                        <i class="fas fa-calendar"></i> ${case_.incident_date} | 
+                        <i class="fas fa-building"></i> ${case_.company_info || '不明'}
+                    </div>
+                    <div class="case-description">${case_.reasoning_text}</div>
+                </div>
+            `).join('');
+        }
+
+        // マークダウンからHTMLへの変換
+        function convertMarkdownToHtml(markdown) {
+            if (!markdown) return '';
+            
+            let html = markdown;
+            
+            // 見出しの変換
+            html = html.replace(/^## (.*$)/gm, '<h3>$1</h3>');
+            html = html.replace(/^### (.*$)/gm, '<h4>$1</h4>');
+            
+            // 太字の変換
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            // リストアイテムの変換
+            html = html.replace(/^(\s*)\* (.*$)/gm, '$1<li>$2</li>');
+            html = html.replace(/^(\s*)- (.*$)/gm, '$1<li>$2</li>');
+            
+            // 段落に分割
+            const lines = html.split('\n');
+            let result = '';
+            let inList = false;
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                
+                if (!line) {
+                    if (inList) {
+                        result += '</ul>';
+                        inList = false;
+                    }
+                    continue;
+                }
+                
+                if (line.startsWith('<h3') || line.startsWith('<h4')) {
+                    if (inList) {
+                        result += '</ul>';
+                        inList = false;
+                    }
+                    result += line;
+                } else if (line.startsWith('<li>')) {
+                    if (!inList) {
+                        result += '<ul>';
+                        inList = true;
+                    }
+                    result += line;
+                } else {
+                    if (inList) {
+                        result += '</ul>';
+                        inList = false;
+                    }
+                    result += '<p>' + line + '</p>';
+                }
+            }
+            
+            if (inList) {
+                result += '</ul>';
+            }
+            
+            return result;
+        }
+
+        // 結果の表示
+        function displayResult(data) {
+            // スコア表示の更新
+            updateScoreCircle(data.risk_score.overall_score);
+            displayRiskLevel(data.risk_level, data.recommendation);
+            displayDetailedScores(data.risk_score);
+            displayRecommendations(data.recommendations);
+            displayAnalysisText(data.analysis_text, data.risk_score, data.related_cases);
+            displayRelatedCases(data.related_cases, data.risk_level);
+            
+            // 結果セクションの表示
+            resultSection.style.display = 'block';
+            resultSection.classList.add('fade-in');
+        }
+
+        // 分析実行
+        analyzeBtn.addEventListener('click', async function() {
+            const text = textInput.value.trim();
+            
+            if (!text) {
+                showError('テキストを入力してください。');
+                return;
+            }
+            
+            if (text.length < 5) {
+                showError('テキストは5文字以上で入力してください。');
+                return;
+            }
+            
+            setLoading(true);
+            hideError();
+            hideResult();
+            
+            try {
+                // まず標準分析でスコアを取得
+                const standardResponse = await fetch('http://localhost:8000/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: text })
+                });
+                
+                if (!standardResponse.ok) {
+                    throw new Error(`HTTP error! status: ${standardResponse.status}`);
+                }
+                
+                const standardData = await standardResponse.json();
+                
+                // 高度分析を実行
+                const advancedResponse = await fetch('http://localhost:8000/analyze-advanced', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        scores: {
+                            content: standardData.risk_score.content_risk,
+                            legal: standardData.risk_score.legal_risk,
+                            brand: standardData.risk_score.brand_risk,
+                            social: standardData.risk_score.social_risk
+                        }
+                    })
+                });
+                
+                if (!advancedResponse.ok) {
+                    throw new Error(`HTTP error! status: ${advancedResponse.status}`);
+                }
+                
+                const advancedData = await advancedResponse.json();
+                
+                // 標準分析の詳細情報と高度分析の結果を統合
+                const combinedData = {
+                    ...standardData,
+                    risk_score: {
+                        ...standardData.risk_score,
+                        overall_score: advancedData.risk_score
+                    },
+                    risk_level: advancedData.risk_level,
+                    recommendation: advancedData.recommendation,
+                    analysis_text: advancedData.analysis_text
+                };
+                
+                displayResult(combinedData);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showError('サーバーに接続できません。APIサーバーが起動しているか確認してください。');
+            } finally {
+                setLoading(false);
+            }
+        });
+    </script>
+</body>
+</html>

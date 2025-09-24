@@ -1,0 +1,20 @@
+# 炎上リスク分析API 依存ライブラリ
+# FastAPI関連
+fastapi>=0.104.1
+uvicorn[standard]>=0.24.0
+
+# AI/ML関連
+google-generativeai>=0.3.2
+
+# データバリデーション
+pydantic>=2.5.0
+
+# 環境変数管理
+python-dotenv>=1.0.0
+
+# その他の便利なライブラリ
+requests>=2.31.0
+
+# Vercel用の追加依存関係
+mangum>=0.17.0
+
