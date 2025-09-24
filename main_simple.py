@@ -263,10 +263,9 @@ async def analyze_text(request: AnalyzeRequest):
 # Vercel用のハンドラー
 try:
     from mangum import Mangum
-    handler = Mangum(app, lifespan="off")
+    handler = Mangum(app)
 except ImportError:
     print("Mangum not available, using direct app")
-    handler = app
 
 if __name__ == "__main__":
     import uvicorn
