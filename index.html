@@ -1098,17 +1098,16 @@
 
         // 詳細スコアの表示
         function displayDetailedScores(riskScore) {
+            // シンプル版では基本的なスコアのみ表示
             const scores = [
-                { label: 'コンテンツリスク', value: riskScore.content_risk, color: getScoreColor(riskScore.content_risk) },
-                { label: '法的リスク', value: riskScore.legal_risk, color: getScoreColor(riskScore.legal_risk) },
-                { label: 'ブランドリスク', value: riskScore.brand_risk, color: getScoreColor(riskScore.brand_risk) },
-                { label: '社会的リスク', value: riskScore.social_risk, color: getScoreColor(riskScore.social_risk) }
+                { label: '総合リスク', value: riskScore.overall_score, color: getScoreColor(riskScore.overall_score) },
+                { label: '信頼度', value: Math.round(riskScore.confidence * 100), color: 'low' }
             ];
 
             detailedScores.innerHTML = scores.map(score => `
                 <div class="score-item">
                     <div class="score-item-label">${score.label}</div>
-                    <div class="score-item-value">${score.value}</div>
+                    <div class="score-item-value">${score.value}${score.label === '信頼度' ? '%' : ''}</div>
                     <div class="score-item-bar">
                         <div class="score-item-progress ${score.color}" style="width: ${score.value}%"></div>
                     </div>
@@ -1623,8 +1622,8 @@
             hideResult();
             
             try {
-                // まず標準分析でスコアを取得
-                const standardResponse = await fetch('http://localhost:8000/analyze', {
+                // Vercel APIを呼び出し
+                const response = await fetch('/analyze', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1632,48 +1631,39 @@
                     body: JSON.stringify({ text: text })
                 });
                 
-                if (!standardResponse.ok) {
-                    throw new Error(`HTTP error! status: ${standardResponse.status}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
-                const standardData = await standardResponse.json();
+                const data = await response.json();
                 
-                // 高度分析を実行
-                const advancedResponse = await fetch('http://localhost:8000/analyze-advanced', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        text: text,
-                        scores: {
-                            content: standardData.risk_score.content_risk,
-                            legal: standardData.risk_score.legal_risk,
-                            brand: standardData.risk_score.brand_risk,
-                            social: standardData.risk_score.social_risk
-                        }
-                    })
-                });
+                // リスクレベルを計算
+                const riskLevel = data.risk_score.overall_score >= 70 ? '投稿危険' : 
+                                 data.risk_score.overall_score >= 40 ? '要レビュー' : '投稿可';
                 
-                if (!advancedResponse.ok) {
-                    throw new Error(`HTTP error! status: ${advancedResponse.status}`);
+                // 推奨事項を生成
+                const recommendations = [];
+                if (data.risk_score.overall_score >= 70) {
+                    recommendations.push('投稿を中止し、内容の全面的な見直しが必要です');
+                    recommendations.push('法務部門との緊急相談を推奨します');
+                    recommendations.push('謝罪文の準備を検討してください');
+                } else if (data.risk_score.overall_score >= 40) {
+                    recommendations.push('投稿前の内容見直しを推奨します');
+                    recommendations.push('一部の表現を修正することを検討してください');
+                    recommendations.push('広報部門との相談を推奨します');
+                } else {
+                    recommendations.push('現在の内容で安全に投稿できます');
+                    recommendations.push('継続的なリスク管理を心がけてください');
                 }
                 
-                const advancedData = await advancedResponse.json();
-                
-                // 標準分析の詳細情報と高度分析の結果を統合
-                const combinedData = {
-                    ...standardData,
-                    risk_score: {
-                        ...standardData.risk_score,
-                        overall_score: advancedData.risk_score
-                    },
-                    risk_level: advancedData.risk_level,
-                    recommendation: advancedData.recommendation,
-                    analysis_text: advancedData.analysis_text
+                // 表示用データを準備
+                const displayData = {
+                    ...data,
+                    risk_level: riskLevel,
+                    recommendations: recommendations
                 };
                 
-                displayResult(combinedData);
+                displayResult(displayData);
                 
             } catch (error) {
                 console.error('Error:', error);
