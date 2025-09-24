@@ -38,10 +38,21 @@ app.add_middleware(
 # Gemini APIの設定
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 if not GEMINI_API_KEY:
-    raise ValueError("GEMINI_API_KEY環境変数が設定されていません")
+    print("警告: GEMINI_API_KEY環境変数が設定されていません")
+    # 本番環境ではエラーを発生させる
+    if os.getenv('VERCEL'):
+        raise ValueError("GEMINI_API_KEY環境変数が設定されていません")
 
-genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel('gemini-1.5-flash')
+# Gemini APIが設定されている場合のみ初期化
+if GEMINI_API_KEY and GEMINI_API_KEY != 'your_gemini_api_key_here':
+    try:
+        genai.configure(api_key=GEMINI_API_KEY)
+        model = genai.GenerativeModel('gemini-1.5-flash')
+    except Exception as e:
+        print(f"Gemini API初期化エラー: {e}")
+        model = None
+else:
+    model = None
 
 # データベースファイルのパス
 DB_PATH = "enjo_cases.db"
@@ -673,8 +684,14 @@ async def analyze_text(request: AnalyzeRequest):
         prompt = generate_gemini_prompt_advanced(request.text, related_cases_data, risk_score)
         
         # 4. Gemini APIを呼び出し
-        response = model.generate_content(prompt)
-        analysis_text = response.text
+        if model:
+            try:
+                response = model.generate_content(prompt)
+                analysis_text = response.text
+            except Exception as e:
+                analysis_text = f"Gemini API呼び出しエラー: {str(e)}\n\n多要素スコアリング結果:\n総合スコア: {risk_score.overall_score}/100\n原因カテゴリ: {risk_score.category}"
+        else:
+            analysis_text = f"Gemini APIが設定されていません。\n\n多要素スコアリング結果:\n総合スコア: {risk_score.overall_score}/100\nコンテンツリスク: {risk_score.content_risk}/100\n法的リスク: {risk_score.legal_risk}/100\nブランドリスク: {risk_score.brand_risk}/100\n社会的リスク: {risk_score.social_risk}/100\n原因カテゴリ: {risk_score.category}\n信頼度: {risk_score.confidence}"
         
         # 5. 関連事例をモデルに変換
         related_cases = [RelatedCase(**case) for case in related_cases_data]
